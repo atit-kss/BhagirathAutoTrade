@@ -3,7 +3,7 @@
     public class EquityDataModel
     {
         public int Id { get; set; }
-        public string Symbol { get; set; }
+        public string Symbole { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public decimal StrikePrice { get; set; }
         public string OptionType { get; set; }

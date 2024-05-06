@@ -1,10 +1,8 @@
 ﻿using BhagirathAutoTrade.Server.Models;
 using Newtonsoft.Json;
-using System.Text.Json;
 using System.Net.Http.Headers;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using BhagirathAutoTrade.Server.Services.Interfaces;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BhagirathAutoTrade.Server.Services
 {
@@ -40,6 +38,7 @@ namespace BhagirathAutoTrade.Server.Services
             catch (Exception ex)
             {
                 // Handle exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
                 throw;
             }
         }
@@ -55,37 +54,100 @@ namespace BhagirathAutoTrade.Server.Services
 
                 var responseData = await response.Content.ReadAsStringAsync();
 
-                return responseData;
+                var result = JsonSerializer.Deserialize<APIResponseModel<string>>(responseData);
+
+                return result.Data;
             }
             catch (Exception ex)
             {
                 // Handle exception
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
+                throw;
             }
         }
 
-        public async Task<EquityResponseModel> GetCalculateDataForEQAsync(EquityRequestModel request)
+        public async Task<string> GetCloseDataAsync(string workingDate, string expiryDate, string exchange, string instrument, string optionType, string type, string strickPrice, string symbol)
         {
             try
             {
-                var jsonRequest = JsonConvert.SerializeObject(request);
-                var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
+                var url = $"GetCloseData?workingDate={workingDate}&expiryDate={expiryDate}&exchange={exchange}&instrument={instrument}&optionType={optionType}&type={type}&strickPrice={strickPrice}&symbole={symbol}";
 
-                var response = await _httpClient.PostAsync("getCalculateDataForEQ", content);
+                var response = await _httpClient.PostAsync(url, null);
                 response.EnsureSuccessStatusCode();
 
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var responseData = JsonConvert.DeserializeObject<EquityResponseModel>(jsonResponse);
+                var responseData = await response.Content.ReadAsStringAsync();
 
-                return responseData;
+                var result = JsonSerializer.Deserialize<APIResponseModel<string>>(responseData);
+
+                return result.Data;
             }
             catch (Exception ex)
             {
                 // Handle exception
                 Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
+                throw;
             }
         }
+        public async Task<EquityData> GetCalculateDataForEQAsync(EquityRequestModel request)
+        {
+            try
+            {
+                var url = $"getCalculateDataForEQ?exchange={request.Exchange}&type={request.Type}&symbol={request.Symbole}&workingdate={request.WorkingDate}&expirydate={request.ExpiryDate}&close={request.Close}&instrument={request.Instrument}&optionType={request.OptionType}";
+                var myContent = JsonConvert.SerializeObject("");
+                var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+                var byteContent = new ByteArrayContent(buffer);
+
+                byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = await _httpClient.PostAsync(url, byteContent);
+                response.EnsureSuccessStatusCode();
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var responseData = JsonConvert.DeserializeObject<EquityApiResponse<EquityData>>(jsonResponse);
+
+                return responseData.Data;
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetExpiryDateAsync(string symbol, string optionType)
+        {
+            try
+            {
+                var query = $"AutoCompleteexpiry";
+                var requestModel = new
+                {
+                    Symbole = symbol,
+                    OptionType = optionType
+                };
+                var myContent = JsonConvert.SerializeObject(requestModel);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+            var byteContent = new ByteArrayContent(buffer);
+
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            // Sample data for POST request
+            var response = await _httpClient.PostAsync(query, byteContent);
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<AutocompleteResponse>(content);
+
+            return result.Data;
+        }
+            catch (Exception ex)
+            {
+                // Handle exception
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw;
+            }
+}
     }
 }

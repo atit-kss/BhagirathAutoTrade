@@ -1,14 +1,13 @@
 export interface EquityData {
   Id: number;
-  exchange: string;
-  type: string;
-  instrument: string;
-  optionType: string;
-  Symbol: string;
-  StartDate: string | null;
+  Exchange: string;
+  Type: string;
+  Instrument: string;
+  OptionType: string;
+  Symbole: string;
+  WorkingDate: string | null;
   ExpiryDate: string | null;
   StrikePrice: string;
-  OptionType: string;
   Open: string;
   High: string;
   Low: string;
@@ -21,4 +20,10 @@ export interface EquityData {
   TotalTradeValue: string;
   MST: string;
   MSTS: string;
+  SS: string;
+  RS: string;
+  SST: string;
+  RST: string;
+  HS: string;
+  HR: string;
 }
